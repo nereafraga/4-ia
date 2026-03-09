@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Científica Rosa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .calculator-body {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            box-shadow: 
+                0 20px 50px rgba(236, 72, 153, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+            padding: 25px;
+            width: 380px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .screen-container {
+            background: #fff0f6;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 4px 10px rgba(236, 72, 153, 0.1);
+            border: 2px solid #fbcfe8;
+            position: relative;
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-end;
+            overflow: hidden;
+        }
+
+        .screen-history {
+            font-size: 0.9rem;
+            color: #db2777;
+            opacity: 0.7;
+            min-height: 1.2em;
+        }
+
+        .screen-current {
+            font-size: 2rem;
+            color: #be185d;
+            font-weight: 600;
+            word-wrap: break-word;
+            word-break: break-all;
+            text-align: right;
+            width: 100%;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        button {
+            aspect-ratio: 1.2; /* Slightly rectangular */
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        /* Button Colors */
+        .btn-num {
+            background: white;
+            color: #db2777;
+            box-shadow: 0 4px 6px rgba(236, 72, 153, 0.1);
+        }
+        .btn-num:hover {
+            background: #fff1f2;
+            box-shadow: 0 6px 8px rgba(236, 72, 153, 0.15);
+        }
+
+        .btn-op {
+            background: #fbcfe8;
+            color: #9d174d;
+            box-shadow: 0 4px 6px rgba(236, 72, 153, 0.1);
+        }
+        .btn-op:hover {
+            background: #f9a8d4;
+        }
+
+        .btn-sci {
+            background: #fce7f3;
+            color: #831843;
+            font-size: 0.9rem;
+        }
+        .btn-sci:hover {
+            background: #fbcfe8;
+        }
+
+        .btn-eq {
+            background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+        }
+        .btn-eq:hover {
+            background: linear-gradient(135deg, #f43f5e 0%, #db2777 100%);
+            box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+        }
+
+        .btn-power {
+            grid-column: span 1;
+            background: #831843;
+            color: white;
+            border-radius: 50%; /* Circle power button */
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .btn-del {
+            background: #f43f5e;
+            color: white;
+        }
+
+        .btn-clear {
+            background: #f43f5e;
+            color: white;
+        }
+
+        /* Power Off State Styles */
+        .powered-off .screen-container {
+            background: #333;
+            border-color: #444;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .powered-off .screen-history,
+        .powered-off .screen-current {
+            color: #555;
+            text-shadow: none;
+        }
+        .powered-off button:not(.btn-power) {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            filter: grayscale(0.8);
+        }
+        
+        .power-indicator {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #555;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .powered-on .power-indicator {
+            background-color: #4ade80;
+            box-shadow: 0 0 8px #4ade80;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="calculator-body" id="calcBody">
+        <div class="screen-container">
+            <div class="power-indicator"></div>
+            <div class="screen-history" id="historyDisplay"></div>
+            <div class="screen-current" id="currentDisplay">0</div>
+        </div>
+
+        <div class="btn-grid">
+            <!-- Row 1: Scientific & Power -->
+            <button class="btn-power" onclick="togglePower()" title="Encender/Apagar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                    <line x1="12" y1="2" x2="12" y2="12"></line>
+                </svg>
+            </button>
+            <button class="btn-sci" onclick="inputFunc('sin')">sin</button>
+            <button class="btn-sci" onclick="inputFunc('cos')">cos</button>
+            <button class="btn-sci" onclick="inputFunc('tan')">tan</button>
+            <button class="btn-sci" onclick="inputFunc('log')">log</button>
+
+            <!-- Row 2: Scientific -->
+            <button class="btn-sci" onclick="inputFunc('ln')">ln</button>
+            <button class="btn-sci" onclick="inputVal('(')">(</button>
+            <button class="btn-sci" onclick="inputVal(')')">)</button>
+            <button class="btn-sci" onclick="inputFunc('sqrt')">√</button>
+            <button class="btn-sci" onclick="inputVal('^')">^</button>
+
+            <!-- Row 3: Numbers & Clear -->
+            <button class="btn-clear" onclick="clearDisplay()">AC</button>
+            <button class="btn-num" onclick="inputVal('7')">7</button>
+            <button class="btn-num" onclick="inputVal('8')">8</button>
+            <button class="btn-num" onclick="inputVal('9')">9</button>
+            <button class="btn-op" onclick="inputVal('/')">÷</button>
+
+            <!-- Row 4: Numbers & Delete -->
+            <button class="btn-del" onclick="backspace()">DEL</button>
+            <button class="btn-num" onclick="inputVal('4')">4</button>
+            <button class="btn-num" onclick="inputVal('5')">5</button>
+            <button class="btn-num" onclick="inputVal('6')">6</button>
+            <button class="btn-op" onclick="inputVal('*')">×</button>
+
+            <!-- Row 5: Numbers & Minus -->
+            <button class="btn-sci" onclick="inputVal('π')">π</button>
+            <button class="btn-num" onclick="inputVal('1')">1</button>
+            <button class="btn-num" onclick="inputVal('2')">2</button>
+            <button class="btn-num" onclick="inputVal('3')">3</button>
+            <button class="btn-op" onclick="inputVal('-')">-</button>
+
+            <!-- Row 6: Zero, Dot, Plus, Equals -->
+            <button class="btn-sci" onclick="inputVal('e')">e</button>
+            <button class="btn-num" onclick="inputVal('0')">0</button>
+            <button class="btn-num" onclick="inputVal('.')">.</button>
+            <button class="btn-eq" onclick="calculate()">=</button>
+            <button class="btn-op" onclick="inputVal('+')">+</button>
+        </div>
+    </div>
+
+    <script>
+        let isPoweredOn = false;
+        let currentInput = "0";
+        let previousInput = "";
+        let shouldResetScreen = false;
+
+        const currentDisplayEl = document.getElementById('currentDisplay');
+        const historyDisplayEl = document.getElementById('historyDisplay');
+        const calcBodyEl = document.getElementById('calcBody');
+
+        // Toggle Power State
+        function togglePower() {
+            isPoweredOn = !isPoweredOn;
+            
+            if (isPoweredOn) {
+                calcBodyEl.classList.add('powered-on');
+                calcBodyEl.classList.remove('powered-off');
+                currentInput = "0";
+                previousInput = "";
+                updateDisplay();
+            } else {
+                calcBodyEl.classList.add('powered-off');
+                calcBodyEl.classList.remove('powered-on');
+                currentDisplayEl.innerText = "";
+                historyDisplayEl.innerText = "";
+                currentInput = "0";
+                previousInput = "";
+            }
+        }
+
+        // Initialize as OFF
+        togglePower(); // Turn on initially for demo, or remove to start off. 
+                       // Request says "when you press a button it turns on", implying start OFF.
+                       // Let's reset to OFF state logic manually to ensure it starts off.
+        isPoweredOn = false;
+        calcBodyEl.classList.add('powered-off');
+        calcBodyEl.classList.remove('powered-on');
+        currentDisplayEl.innerText = "";
+        historyDisplayEl.innerText = "";
+
+
+        function updateDisplay() {
+            if (!isPoweredOn) return;
+            currentDisplayEl.innerText = currentInput;
+            historyDisplayEl.innerText = previousInput;
+        }
+
+        function inputVal(val) {
+            if (!isPoweredOn) return;
+
+            if (shouldResetScreen) {
+                currentInput = "";
+                shouldResetScreen = false;
+            }
+
+            if (currentInput === "0" && val !== ".") {
+                currentInput = val;
+            } else {
+                currentInput += val;
+            }
+            updateDisplay();
+        }
+
+        function inputFunc(func) {
+            if (!isPoweredOn) return;
+
+            if (shouldResetScreen) {
+                currentInput = "";
+                shouldResetScreen = false;
+            }
+
+            if (currentInput === "0") currentInput = "";
+
+            if (func === 'sqrt') {
+                currentInput += 'sqrt(';
+            } else if (func === 'log') {
+                currentInput += 'log10(';
+            } else if (func === 'ln') {
+                currentInput += 'log(';
+            } else {
+                currentInput += func + '(';
+            }
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            if (!isPoweredOn) return;
+            currentInput = "0";
+            previousInput = "";
+            shouldResetScreen = false;
+            updateDisplay();
+        }
+
+        function backspace() {
+            if (!isPoweredOn) return;
+            
+            if (currentInput.length === 1 || (currentInput.length === 2 && currentInput.startsWith('-'))) {
+                currentInput = "0";
+            } else {
+                currentInput = currentInput.slice(0, -1);
+            }
+            updateDisplay();
+        }
+
+        function calculate() {
+            if (!isPoweredOn) return;
+
+            try {
+                // Prepare string for evaluation
+                let expression = currentInput;
+
+                // Replace visual symbols with JS Math functions
+                expression = expression.replace(/×/g, '*')
+                                       .replace(/÷/g, '/')
+                                       .replace(/π/g, 'Math.PI')
+                                       .replace(/e/g, 'Math.E')
+                                       .replace(/sqrt\(/g, 'Math.sqrt(')
+                                       .replace(/sin\(/g, 'Math.sin(')
+                                       .replace(/cos\(/g, 'Math.cos(')
+                                       .replace(/tan\(/g, 'Math.tan(')
+                                       .replace(/log10\(/g, 'Math.log10(')
+                                       .replace(/log\(/g, 'Math.log(') // Natural log
+                                       .replace(/\^/g, '**');
+
+                // Safety check: only allow math characters
+                if (/[^0-9+\-*/().MathPIElogsqrtcosTan^]/.test(expression.replace(/Math\.(PI|E|sqrt|sin|cos|tan|log|log10)/g, ''))) {
+                    throw new Error("Invalid Input");
+                }
+
+                const result = eval(expression);
+
+                // Format result
+                let formattedResult = parseFloat(result.toFixed(8)).toString(); // Avoid long decimals
+                
+                previousInput = currentInput + " =";
+                currentInput = formattedResult;
+                shouldResetScreen = true;
+                updateDisplay();
+
+            } catch (error) {
+                currentInput = "Error";
+                shouldResetScreen = true;
+                updateDisplay();
+            }
+        }
+    </script>
+</body>
+</html>
+
