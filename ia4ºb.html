@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Salud y Conversiones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .calculator {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 550px;
+            overflow: hidden;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            padding: 30px 24px;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f0fdf4;
+            padding: 10px;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 10px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tab-btn:hover {
+            background: #dcfce7;
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #059669;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .tab-icon {
+            font-size: 1.4rem;
+        }
+
+        .content {
+            padding: 24px;
+            max-height: 550px;
+            overflow-y: auto;
+        }
+
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+            animation: fadeIn 0.35s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        .input-group label {
+            display: block;
+            color: #374151;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+        }
+
+        .input-group input::placeholder {
+            color: #9ca3af;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .action-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            border: 2px solid #10b981;
+            border-radius: 14px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+            animation: resultPop 0.4s ease;
+        }
+
+        @keyframes resultPop {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .result-label {
+            color: #059669;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .result-value {
+            color: #1f2937;
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 6px;
+        }
+
+        .result-detail {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .result-category {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        .cat-underweight { background: #dbeafe; color: #1d4ed8; }
+        .cat-normal { background: #dcfce7; color: #16a34a; }
+        .cat-overweight { background: #fef3c7; color: #d97706; }
+        .cat-obesity { background: #fee2e2; color: #dc2626; }
+
+        .temp-display {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .temp-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 14px 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .temp-card:hover {
+            border-color: #10b981;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+
+        .temp-card-label {
+            color: #6b7280;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .temp-card-value {
+            color: #1f2937;
+            font-size: 1.3rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .food-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .food-btn {
+            padding: 12px 8px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.75rem;
+            text-align: center;
+        }
+
+        .food-btn:hover {
+            border-color: #10b981;
+            transform: scale(1.05);
+        }
+
+        .food-btn.active {
+            border-color: #10b981;
+            background: #f0fdf4;
+            color: #059669;
+        }
+
+        .food-icon {
+            font-size: 1.3rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .info-badge {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .history-section {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .history-title {
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.85rem;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-item span:first-child {
+            color: #6b7280;
+        }
+
+        .history-item span:last-child {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .clear-history {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .clear-history:hover {
+            background: #fecaca;
+        }
+
+        .gender-select {
+            display: flex;
+            gap: 12px;
+        }
+
+        .gender-option {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .gender-option:hover {
+            border-color: #10b981;
+        }
+
+        .gender-option.active {
+            border-color: #10b981;
+            background: #f0fdf4;
+            color: #059669;
+        }
+
+        .activity-select {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .activity-option {
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .activity-option:hover {
+            border-color: #10b981;
+        }
+
+        .activity-option.active {
+            border-color: #10b981;
+            background: #f0fdf4;
+            color: #059669;
+        }
+
+        .water-tracker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .water-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .water-minus {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .water-plus {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .water-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .water-display {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #10b981;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #10b981, #059669);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        @media (max-width: 480px) {
+            .food-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .temp-display {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                justify-content: center;
+            }
+            
+            .tab-btn {
+                min-width: 70px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="header">
+            <h1>🧮 Calculadora de Salud</h1>
+            <p>Tu asistente personal de bienestar</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('temperature')">
+                <span class="tab-icon">🌡️</span>
+                <span>Temperatura</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('bmi')">
+                <span class="tab-icon">⚖️</span>
+                <span>IMC</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('calories')">
+                <span class="tab-icon">🍎</span>
+                <span>Calorías</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('tdee')">
+                <span class="tab-icon">🔥</span>
+                <span>TDEE</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('water')">
+                <span class="tab-icon">💧</span>
+                <span>Agua</span>
+            </button>
+        </div>
+
+        <div class="content">
+            <!-- Temperature Converter Panel -->
+            <div id="temperature" class="panel active">
+                <div class="info-badge">
+                    <span>ℹ️</span>
+                    <span>Convierte entre Celsius, Fahrenheit y Kelvin al instante</span>
+                </div>
+
+                <div class="input-group">
+                    <label>Valor de Temperatura</label>
+                    <input type="number" id="tempInput" placeholder="Ej: 25" step="any">
+                </div>
+
+                <div class="input-group">
+                    <label>Selecciona la Escala</label>
+                    <select id="tempScale">
+                        <option value="C">Celsius (°C)</option>
+                        <option value="F">Fahrenheit (°F)</option>
+                        <option value="K">Kelvin (K)</option>
+                    </select>
+                </div>
+
+                <button class="action-btn" onclick="convertTemperature()">🔄 Convertir</button>
+
+                <div class="temp-display">
+                    <div class="temp-card">
+                        <div class="temp-card-label">Celsius</div>
+                        <div class="temp-card-value" id="resultC">--</div>
+                    </div>
+                    <div class="temp-card">
+                        <div class="temp-card-label">Fahrenheit</div>
+                        <div class="temp-card-value" id="resultF">--</div>
+                    </div>
+                    <div class="temp-card">
+                        <div class="temp-card-label">Kelvin</div>
+                        <div class="temp-card-value" id="resultK">--</div>
+                    </div>
+                </div>
+
+                <div class="history-section" id="tempHistory">
+                    <div class="history-title">📜 Historial Reciente</div>
+                    <div id="tempHistoryList"></div>
+                    <button class="clear-history" onclick="clearHistory('temp')">Limpiar Historial</button>
+                </div>
+            </div>
+
+            <!-- BMI Calculator Panel -->
+            <div id="bmi" class="panel">
+                <div class="info-badge">
+                    <span>ℹ️</span>
+                    <span>El IMC es un indicador de grasa corporal basado en altura y peso</span>
+                </div>
+
+                <div class="input-group">
+                    <label>Peso (kg)</label>
+                    <input type="number" id="bmiWeight" placeholder="Ej: 70" step="0.1">
+                </div>
+
+                <div class="input-group">
+                    <label>Altura (cm)</label>
+                    <input type="number" id="bmiHeight" placeholder="Ej: 175">
+                </div>
+
+                <button class="action-btn" onclick="calculateBMI()">📊 Calcular IMC</button>
+
+                <div class="result-box" id="bmiResultBox" style="display: none;">
+                    <div class="result-label">Tu IMC</div>
+                    <div class="result-value" id="bmiValue">--</div>
+                    <div class="result-detail" id="bmiDetail">--</div>
+                    <div class="result-category" id="bmiCategory">--</div>
+                </div>
+
+                <div class="history-section" id="bmiHistory">
+                    <div class="history-title">📜 Historial Reciente</div>
+                    <div id="bmiHistoryList"></div>
+                    <button class="clear-history" onclick="clearHistory('bmi')">Limpiar Historial</button>
+                </div>
+            </div>
+
+            <!-- Calorie Estimator Panel -->
+            <div id="calories" class="panel">
+                <div class="info-badge">
+                    <span>ℹ️</span>
+                    <span>Las calorías son valores aproximados por cada 100g de alimento</span>
+                </div>
+
+                <label class="block text-gray-700 font-semibold mb-3">Selecciona el Alimento</label>
+                <div class="food-grid">
+                    <button class="food-btn" onclick="selectFood('rice')" data-food="rice">
+                        <span class="food-icon">🍚</span>
+                        Arroz
+                    </button>
+                    <button class="food-btn" onclick="selectFood('chicken')" data-food="chicken">
+                        <span class="food-icon">🍗</span>
+                        Pollo
+                    </button>
+                    <button class="food-btn" onclick="selectFood('bread')" data-food="bread">
+                        <span class="food-icon">🍞</span>
+                        Pan
+                    </button>
+                    <button class="food-btn" onclick="selectFood('egg')" data-food="egg">
+                        <span class="food-icon">🥚</span>
+                        Huevo
+                    </button>
+                    <button class="food-btn" onclick="selectFood('apple')" data-food="apple">
+                        <span class="food-icon">🍎</span>
+                        Manzana
+                    </button>
+                    <button class="food-btn" onclick="selectFood('banana')" data-food="banana">
+                        <span class="food-icon">🍌</span>
+                        Plátano
+                    </button>
+                    <button class="food-btn" onclick="selectFood('cheese')" data-food="cheese">
+                        <span class="food-icon">🧀</span>
+                        Queso
+                    </button>
+                    <button class="food-btn" onclick="selectFood('potato')" data-food="potato">
+                        <span class="food-icon">🥔</span>
+                        Papa
+                    </button>
+                    <button class="food-btn" onclick="selectFood('fish')" data-food="fish">
+                        <span class="food-icon">🐟</span>
+                        Pescado
+                    </button>
+                    <button class="food-btn" onclick="selectFood('pasta')" data-food="pasta">
+                        <span class="food-icon">🍝</span>
+                        Pasta
+                    </button>
+                    <button class="food-btn" onclick="selectFood('milk')" data-food="milk">
+                        <span class="food-icon">🥛</span>
+                        Leche
+                    </button>
+                    <button class="food-btn" onclick="selectFood('nuts')" data-food="nuts">
+                        <span class="food-icon">🥜</span>
+                        Nueces
+                    </button>
+                    <button class="food-btn" onclick="selectFood('avocado')" data-food="avocado">
+                        <span class="food-icon">🥑</span>
+                        Aguacate
+                    </button>
+                    <button class="food-btn" onclick="selectFood('beef')" data-food="beef">
+                        <span class="food-icon">🥩</span>
+                        Carne
+                    </button>
+                    <button class="food-btn" onclick="selectFood('orange')" data-food="orange">
+                        <span class="food-icon">🍊</span>
+                        Naranja
+                    </button>
+                    <button class="food-btn" onclick="selectFood('yogurt')" data-food="yogurt">
+                        <span class="food-icon">🥛</span>
+                        Yogurt
+                    </button>
+                    <button class="food-btn" onclick="selectFood('chocolate')" data-food="chocolate">
+                        <span class="food-icon">🍫</span>
+                        Chocolate
+                    </button>
+                    <button class="food-btn" onclick="selectFood('salad')" data-food="salad">
+                        <span class="food-icon">🥗</span>
+                        Ensalada
+                    </button>
+                </div>
+
+                <div class="input-group">
+                    <label>Cantidad (gramos)</label>
+                    <input type="number" id="calQuantity" placeholder="Ej: 150" step="any">
+                </div>
+
+                <button class="action-btn" onclick="calculateCalories()">🔥 Calcular Calorías</button>
+
+                <div class="result-box" id="calResultBox" style="display: none;">
+                    <div class="result-label">Calorías Totales</div>
+                    <div class="result-value" id="calValue">--</div>
+                    <div class="result-detail" id="calDetail">--</div>
+                </div>
+
+                <div class="history-section" id="calHistory">
+                    <div class="history-title">📜 Historial Reciente</div>
+                    <div id="calHistoryList"></div>
+                    <button class="clear-history" onclick="clearHistory('cal')">Limpiar Historial</button>
+                </div>
+            </div>
+
+            <!-- TDEE Calculator Panel -->
+            <div id="tdee" class="panel">
+                <div class="info-badge">
+                    <span>ℹ️</span>
+                    <span>TDEE: Calorías que quemas diariamente según tu actividad</span>
+                </div>
+
+                <div class="input-group">
+                    <label>Peso (kg)</label>
+                    <input type="number" id="tdeeWeight" placeholder="Ej: 70" step="0.1">
+                </div>
+
+                <div class="input-group">
+                    <label>Altura (cm)</label>
+                    <input type="number" id="tdeeHeight" placeholder="Ej: 175">
+                </div>
+
+                <div class="input-group">
+                    <label>Edad (años)</label>
+                    <input type="number" id="tdeeAge" placeholder="Ej: 30">
+                </div>
+
+                <div class="input-group">
+                    <label>Género</label>
+                    <div class="gender-select">
+                        <div class="gender-option active" onclick="selectGender('male')" id="genderMale">
+                            👨 Hombre
+                        </div>
+                        <div class="gender-option" onclick="selectGender('female')" id="genderFemale">
+                            👩 Mujer
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Nivel de Actividad</label>
+                    <div class="activity-select">
+                        <div class="activity-option active" onclick="selectActivity('sedentary')" data-activity="sedentary">
+                            🪑 Sedentario
+                        </div>
+                        <div class="activity-option" onclick="selectActivity('light')" data-activity="light">
+                            🚶 Ligero
+                        </div>
+                        <div class="activity-option" onclick="selectActivity('moderate')" data-activity="moderate">
+                            🏃 Moderado
+                        </div>
+                        <div class="activity-option" onclick="selectActivity('active')" data-activity="active">
+                            💪 Activo
+                        </div>
+                    </div>
+                </div>
+
+                <button class="action-btn" onclick="calculateTDEE()">🔥 Calcular TDEE</button>
+
+                <div class="result-box" id="tdeeResultBox" style="display: none;">
+                    <div class="result-label">Calorías Diarias</div>
+                    <div class="result-value" id="tdeeValue">--</div>
+                    <div class="result-detail" id="tdeeDetail">--</div>
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+                        <div class="result-detail" style="margin-bottom: 8px;">Para perder peso: <strong id="tdeeLose" style="color: #dc2626;">--</strong></div>
+                        <div class="result-detail" style="margin-bottom: 8px;">Para mantener: <strong id="tdeeMaintain" style="color: #10b981;">--</strong></div>
+                        <div class="result-detail">Para ganar peso: <strong id="tdeeGain" style="color: #1d4ed8;">--</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Water Tracker Panel -->
+            <div id="water" class="panel">
+                <div class="info-badge">
+                    <span>ℹ️</span>
+                    <span>Se recomienda beber al menos 2 litros de agua al día</span>
+                </div>
+
+                <div class="water-tracker">
+                    <button class="water-btn water-minus" onclick="updateWater(-250)">−</button>
+                    <div class="water-display">
+                        <span id="waterAmount">0</span> ml
+                    </div>
+                    <button class="water-btn water-plus" onclick="updateWater(250)">+</button>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="waterProgress" style="width: 0%;"></div>
+                </div>
+
+                <div style="text-align: center; margin-top: 10px; color: #6b7280; font-size: 0.85rem;">
+                    Meta: 2000 ml | <span id="waterRemaining">2000</span> ml restantes
+                </div>
+
+                <div class="water-tracker" style="margin-top: 20px;">
+                    <button class="water-btn" style="background: #dbeafe; color: #1d4ed8;" onclick="updateWater(500)">
+                        🥤
+                    </button>
+                    <button class="water-btn" style="background: #fef3c7; color: #d97706;" onclick="updateWater(330)">
+                        🥫
+                    </button>
+                    <button class="water-btn" style="background: #dcfce7; color: #16a34a;" onclick="updateWater(200)">
+                        ☕
+                    </button>
+                </div>
+
+                <button class="action-btn" onclick="resetWater()" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); margin-top: 15px;">
+                    🔄 Reiniciar Contador
+                </button>
+
+                <div class="result-box" style="margin-top: 20px;">
+                    <div class="result-label">💡 Consejos de Hidratación</div>
+                    <div class="result-detail" id="waterTip" style="text-align: left; line-height: 1.6;">
+                        Bebe agua regularmente durante el día, no esperes a tener sed.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Historial de cálculos
+        const history = {
+            temp: [],
+            bmi: [],
+            cal: []
+        };
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
+            
+            event.currentTarget.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Limpiar historial
+        function clearHistory(type) {
+            history[type] = [];
+            updateHistoryDisplay(type);
+        }
+
+        // Actualizar display del historial
+        function updateHistoryDisplay(type) {
+            const listEl = document.getElementById(`${type}HistoryList`);
+            if (!listEl) return;
+            
+            if (history[type].length === 0) {
+                listEl.innerHTML = '<div style="color: #9ca3af; font-size: 0.8rem;">Sin historial reciente</div>';
+                return;
+            }
+
+            listEl.innerHTML = history[type].slice(-5).reverse().map(item => `
+                <div class="history-item">
+                    <span>${item.label}</span>
+                    <span>${item.value}</span>
+                </div>
+            `).join('');
+        }
+
+        // Agregar al historial
+        function addToHistory(type, label, value) {
+            history[type].push({ label, value, time: new Date() });
+            if (history[type].length > 10) history[type].shift();
+            updateHistoryDisplay(type);
+        }
+
+        // ============ TEMPERATURE CONVERTER ============
+        function convertTemperature() {
+            const input = parseFloat(document.getElementById('tempInput').value);
+            const scale = document.getElementById('tempScale').value;
+
+            if (isNaN(input)) {
+                alert('Por favor ingresa un valor de temperatura válido');
+                return;
+            }
+
+            let celsius, fahrenheit, kelvin;
+
+            if (scale === 'C') {
+                celsius = input;
+            } else if (scale === 'F') {
+                celsius = (input - 32) * 5/9;
+            } else if (scale === 'K') {
+                celsius = input - 273.15;
+            }
+
+            fahrenheit = (celsius * 9/5) + 32;
+            kelvin = celsius + 273.15;
+
+            document.getElementById('resultC').textContent = `${celsius.toFixed(2)} °C`;
+            document.getElementById('resultF').textContent = `${fahrenheit.toFixed(2)} °F`;
+            document.getElementById('resultK').textContent = `${kelvin.toFixed(2)} K`;
+
+            addToHistory('temp', `${input}°${scale}`, `${celsius.toFixed(1)}°C`);
+        }
+
+        // ============ BMI CALCULATOR ============
+        function calculateBMI() {
+            const weight = parseFloat(document.getElementById('bmiWeight').value);
+            const heightCm = parseFloat(document.getElementById('bmiHeight').value);
+
+            if (isNaN(weight) || isNaN(heightCm) || weight <= 0 || heightCm <= 0) {
+                alert('Por favor ingresa valores válidos de peso y altura');
+                return;
+            }
+
+            const heightM = heightCm / 100;
+            const bmi = weight / (heightM * heightM);
+            const bmiRounded = bmi.toFixed(1);
+
+            let category, categoryClass, detail;
+
+            if (bmi < 18.5) {
+                category = 'Bajo Peso';
+                categoryClass = 'cat-underweight';
+                detail = 'Por debajo del rango normal';
+            } else if (bmi >= 18.5 && bmi < 25) {
+                category = 'Normal';
+                categoryClass = 'cat-normal';
+                detail = 'Rango de peso saludable';
+            } else if (bmi >= 25 && bmi < 30) {
+                category = 'Sobrepeso';
+                categoryClass = 'cat-overweight';
+                detail = 'Por encima del rango normal';
+            } else {
+                category = 'Obesidad';
+                categoryClass = 'cat-obesity';
+                detail = 'Significativamente por encima';
+            }
+
+            document.getElementById('bmiValue').textContent = bmiRounded;
+            document.getElementById('bmiDetail').textContent = detail;
+            
+            const categoryEl = document.getElementById('bmiCategory');
+            categoryEl.textContent = category;
+            categoryEl.className = 'result-category ' + categoryClass;
+
+            document.getElementById('bmiResultBox').style.display = 'block';
+
+            addToHistory('bmi', `${weight}kg / ${heightCm}cm`, `${bmiRounded} - ${category}`);
+        }
+
+        // ============ CALORIE ESTIMATOR ============
+        const foodCalories = {
+            rice: { name: 'Arroz', calories: 130, icon: '🍚' },
+            chicken: { name: 'Pollo', calories: 165, icon: '🍗' },
+            bread: { name: 'Pan', calories: 265, icon: '🍞' },
+            egg: { name: 'Huevo', calories: 155, icon: '🥚' },
+            apple: { name: 'Manzana', calories: 52, icon: '🍎' },
+            banana: { name: 'Plátano', calories: 89, icon: '🍌' },
+            cheese: { name: 'Queso', calories: 402, icon: '🧀' },
+            potato: { name: 'Papa', calories: 77, icon: '🥔' },
+            fish: { name: 'Pescado', calories: 208, icon: '🐟' },
+            pasta: { name: 'Pasta', calories: 131, icon: '🍝' },
+            milk: { name: 'Leche', calories: 61, icon: '🥛' },
+            nuts: { name: 'Nueces', calories: 607, icon: '🥜' },
+            avocado: { name: 'Aguacate', calories: 160, icon: '🥑' },
+            beef: { name: 'Carne', calories: 250, icon: '🥩' },
+            orange: { name: 'Naranja', calories: 47, icon: '🍊' },
+            yogurt: { name: 'Yogurt', calories: 59, icon: '🥛' },
+            chocolate: { name: 'Chocolate', calories: 546, icon: '🍫' },
+            salad: { name: 'Ensalada', calories: 33, icon: '🥗' }
+        };
+
+        let selectedFood = null;
+
+        function selectFood(foodKey) {
+            selectedFood = foodKey;
+            
+            document.querySelectorAll('.food-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-food="${foodKey}"]`).classList.add('active');
+        }
+
+        function calculateCalories() {
+            const quantity = parseFloat(document.getElementById('calQuantity').value);
+
+            if (!selectedFood) {
+                alert('Por favor selecciona un alimento');
+                return;
+            }
+
+            if (isNaN(quantity) || quantity <= 0) {
+                alert('Por favor ingresa una cantidad válida');
+                return;
+            }
+
+            const food = foodCalories[selectedFood];
+            const calories = (food.calories * quantity) / 100;
+
+            document.getElementById('calValue').textContent = `${calories.toFixed(0)} kcal`;
+            document.getElementById('calDetail').textContent = `${quantity}g de ${food.icon} ${food.name} (${food.calories} kcal/100g)`;
+
+            document.getElementById('calResultBox').style.display = 'block';
+
+            addToHistory('cal', `${quantity}g ${food.name}`, `${calories.toFixed(0)} kcal`);
+        }
+
+        // ============ TDEE CALCULATOR ============
+        let selectedGender = 'male';
+        let selectedActivity = 'sedentary';
+
+        const activityMultipliers = {
+            sedentary: { value: 1.2, label: 'Poco o nada de ejercicio' },
+            light: { value: 1.375, label: 'Ejercicio ligero 1-3 días' },
+            moderate: { value: 1.55, label: 'Ejercicio moderado 3-5 días' },
+            active: { value: 1.725, label: 'Ejercicio intenso 6-7 días' }
+        };
+
+        function selectGender(gender) {
+            selectedGender = gender;
+            document.getElementById('genderMale').classList.toggle('active', gender === 'male');
+            document.getElementById('genderFemale').classList.toggle('active', gender === 'female');
+        }
+
+        function selectActivity(activity) {
+            selectedActivity = activity;
+            document.querySelectorAll('.activity-option').forEach(opt => {
+                opt.classList.toggle('active', opt.dataset.activity === activity);
+            });
+        }
+
+        function calculateTDEE() {
+            const weight = parseFloat(document.getElementById('tdeeWeight').value);
+            const heightCm = parseFloat(document.getElementById('tdeeHeight').value);
+            const age = parseFloat(document.getElementById('tdeeAge').value);
+
+            if (isNaN(weight) || isNaN(heightCm) || isNaN(age) || weight <= 0 || heightCm <= 0 || age <= 0) {
+                alert('Por favor ingresa todos los valores correctamente');
+                return;
+            }
+
+            // Mifflin-St Jeor Equation
+            let bmr;
+            if (selectedGender === 'male') {
+                bmr = (10 * weight) + (6.25 * heightCm) - (5 * age) + 5;
+            } else {
+                bmr = (10 * weight) + (6.25 * heightCm) - (5 * age) - 161;
+            }
+
+            const tdee = bmr * activityMultipliers[selectedActivity].value;
+            const tdeeRounded = Math.round(tdee);
+
+            document.getElementById('tdeeValue').textContent = `${tdeeRounded} kcal`;
+            document.getElementById('tdeeDetail').textContent = `Tasa Metabólica: ${Math.round(bmr)} kcal/día`;
+            document.getElementById('tdeeLose').textContent = `${Math.round(tdee - 500)} kcal/día (-0.5kg/sem)`;
+            document.getElementById('tdeeMaintain').textContent = `${tdeeRounded} kcal/día`;
+            document.getElementById('tdeeGain').textContent = `${Math.round(tdee + 500)} kcal/día (+0.5kg/sem)`;
+
+            document.getElementById('tdeeResultBox').style.display = 'block';
+        }
+
+        // ============ WATER TRACKER ============
+        let waterIntake = 0;
+        const waterGoal = 2000;
+
+        const waterTips = [
+            "Bebe agua regularmente durante el día, no esperes a tener sed.",
+            "Comienza tu día con un vaso de agua para activar tu metabolismo.",
+            "Bebe agua antes de las comidas para ayudar a la digestión.",
+            "Mantén una botella de agua cerca para recordar beber.",
+            "Come frutas y verduras con alto contenido de agua.",
+            "Bebe más agua cuando haces ejercicio o hace calor.",
+            "El color de tu orina es un buen indicador de hidratación.",
+            "Bebe agua incluso si no tienes sed, especialmente en invierno."
+        ];
+
+        function updateWater(amount) {
+            waterIntake = Math.max(0, waterIntake + amount);
+            updateWaterDisplay();
+        }
+
+        function updateWaterDisplay() {
+            document.getElementById('waterAmount').textContent = waterIntake;
+            const remaining = Math.max(0, waterGoal - waterIntake);
+            document.getElementById('waterRemaining').textContent = remaining;
+            
+            const progress = Math.min(100, (waterIntake / waterGoal) * 100);
+            document.getElementById('waterProgress').style.width = `${progress}%`;
+
+            // Cambiar color según progreso
+            const progressFill = document.getElementById('waterProgress');
+            if (progress >= 100) {
+                progressFill.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+            } else if (progress >= 50) {
+                progressFill.style.background = 'linear-gradient(90deg, #3b82f6, #1d4ed8)';
+            } else {
+                progressFill.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
+            }
+
+            // Mostrar consejo aleatorio al alcanzar meta
+            if (progress >= 100 && progress - (waterIntake - amount) / waterGoal * 100 < 100) {
+                const randomTip = waterTips[Math.floor(Math.random() * waterTips.length)];
+                document.getElementById('waterTip').textContent = '🎉 ¡Meta alcanzada! ' + randomTip;
+            }
+        }
+
+        function resetWater() {
+            waterIntake = 0;
+            updateWaterDisplay();
+            document.getElementById('waterTip').textContent = waterTips[0];
+        }
+
+        // Inicializar displays de historial
+        updateHistoryDisplay('temp');
+        updateHistoryDisplay('bmi');
+        updateHistoryDisplay('cal');
+        updateWaterDisplay();
+    </script>
+</body>
+</html>
+
+>
+
