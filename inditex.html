@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Multifuncional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-active {
+            background-color: #fbbf24;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(251, 191, 36, 0.4);
+        }
+        .tab-inactive {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .tab-inactive:hover {
+            background-color: #fde68a;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-yellow-50 to-orange-100 min-h-screen flex items-center justify-center p-4">
+
+<div class="w-full max-w-md">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-yellow-600 mb-2">🧮 Calculadora Multifuncional</h1>
+        <p class="text-yellow-700 text-sm">Herramientas útiles para tu día a día</p>
+    </div>
+
+    <!-- Main Card -->
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-yellow-300">
+        
+        <!-- Navigation Tabs -->
+        <div class="flex bg-yellow-50 border-b-2 border-yellow-200">
+            <button onclick="switchTab('temp')" id="tab-temp" class="flex-1 py-4 px-2 text-sm font-semibold transition-all duration-200 tab-active flex flex-col items-center gap-1">
+                <span class="text-lg">🌡️</span>
+                <span>Temperatura</span>
+            </button>
+            <button onclick="switchTab('bmi')" id="tab-bmi" class="flex-1 py-4 px-2 text-sm font-semibold transition-all duration-200 tab-inactive flex flex-col items-center gap-1">
+                <span class="text-lg">⚖️</span>
+                <span>IMC</span>
+            </button>
+            <button onclick="switchTab('calories')" id="tab-calories" class="flex-1 py-4 px-2 text-sm font-semibold transition-all duration-200 tab-inactive flex flex-col items-center gap-1">
+                <span class="text-lg">🍎</span>
+                <span>Calorías</span>
+            </button>
+            <button onclick="switchTab('tip')" id="tab-tip" class="flex-1 py-4 px-2 text-sm font-semibold transition-all duration-200 tab-inactive flex flex-col items-center gap-1">
+                <span class="text-lg">💰</span>
+                <span>Propina</span>
+            </button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="p-6">
+            
+            <!-- Temperature Converter -->
+            <div id="content-temp" class="fade-in">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span class="bg-yellow-100 p-2 rounded-lg">🌡️</span> Convertidor de Temperatura
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Valor</label>
+                        <input type="number" id="temp-value" placeholder="Ingresa temperatura" 
+                               class="w-full px-4 py-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-400 focus:outline-none transition-colors">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Escala</label>
+                        <select id="temp-scale" class="w-full px-4 py-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-400 focus:outline-none transition-colors bg-white">
+                            <option value="celsius">Celsius (°C)</option>
+                            <option value="fahrenheit">Fahrenheit (°F)</option>
+                            <option value="kelvin">Kelvin (K)</option>
+                        </select>
+                    </div>
+
+                    <button onclick="convertTemperature()" 
+                            class="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-md hover:shadow-lg">
+                        Convertir
+                    </button>
+
+                    <div id="temp-results" class="hidden mt-4 space-y-2">
+                        <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                            <span class="text-sm text-gray-600">Celsius:</span>
+                            <span id="result-celsius" class="font-bold text-yellow-700 ml-2">-</span>
+                        </div>
+                        <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                            <span class="text-sm text-gray-600">Fahrenheit:</span>
+                            <span id="result-fahrenheit" class="font-bold text-yellow-700 ml-2">-</span>
+                        </div>
+                        <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                            <span class="text-sm text-gray-600">Kelvin:</span>
+                            <span id="result-kelvin" class="font-bold text-yellow-700 ml-2">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BMI Calculator -->
+            <div id="content-bmi" class="hidden fade-in">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span class="bg-yellow-100 p-2 rounded-lg">⚖️</span> Calculadora de IMC
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Peso (kg)</label>
+                        <input type="number" id="bmi-weight" placeholder="Ej: 70" 
+                               class="w-full px-4 py-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-400 focus:outline-none transition-colors">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Altura (cm)</label>
+                        <input type="number" id="bmi-height" placeholder="Ej: 175" 
+                               class="w-full px-4 py-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-400 focus:outline-none transition-colors">
+                    </div>
+
+                    <button onclick="calculateBMI()" 
+                            class="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-md hover:shadow-lg">
+                        Calcular IMC
+                    </button>
+
+                    <div id="bmi-result" class="hidden mt-4">
+                        <div class="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-300 text-center">
+                            <div class="text-sm text-gray-600 mb-1">Tu IMC es:</div>
+                            <div id="bmi-value" class="text-3xl font-bold text-yellow-600 mb-2">-</div>
+                            <div id="bmi-category" class="inline-block px-4 py-2 rounded-full text-sm font-semibold">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calorie Estimator -->
+            <div id="content-calories" class="hidden fade-in">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span class="bg-yellow-100 p-2 rounded-lg">🍎</span> Estimador de Calorías
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Alimento</label>
+                        <select id="calorie-food" class="w-full px-4 py-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-400 focus:outline-none transition-colors bg-white">
+                            <option value="">Selecciona un alimento</option>
+                            <option value="apple">Manzana (52 kcal/100g)</option>
+                            <option value="banana">Plátano (89 kcal/100g)</option>
+                            <option value="rice">Arroz cocido (130 kcal/100g)</option>
+                            <option value="chicken">Pollo cocido (165 kcal/100g)</option>
+                            <option value="bread">Pan blanco (265 kcal/100g)</option>
+                            <option value="egg">Huevo (155 kcal/100g)</option>
+                            <option value="milk">Leche entera (61 kcal/100ml)</option>
+                            <option value="cheese">Queso cheddar (403 kcal/100g)</option>
+                            <option value="pasta">Pasta cocida (131 kcal/100g)</option>
+                            <option value="salmon">Salmón (208 kcal/100g)</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad (gramos)</label>
+                        <input type="number" id="calorie-amount" placeholder="Ej: 150" 
+                               class="w-full px-4 py-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-400 focus:outline-none transition-colors">
+                    </div>
+
+                    <button onclick="estimateCalories()" 
+                            class="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-md hover:shadow-lg">
+                        Calcular Calorías
+                    </button>
+
+                    <div id="calorie-result" class="hidden mt-4">
+                        <div class="bg-gradient-to-r from-yellow-400 to-orange-400 p-4 rounded-lg text-white text-center shadow-md">
+                            <div class="text-sm opacity-90 mb-1">Calorías aproximadas:</div>
+                            <div id="calorie-value" class="text-3xl font-bold">-</div>
+                            <div class="text-sm opacity-90 mt-1">kcal</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tip Calculator (Bonus) -->
+            <div id="content-tip" class="hidden fade-in">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span class="bg-yellow-100 p-2 rounded-lg">💰</span> Calculadora de Propina
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Total de la cuenta ($)</label>
+                        <input type="number" id="tip-total" placeholder="Ej: 50.00" 
+                               class="w-full px-4 py-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-400 focus:outline-none transition-colors">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Porcentaje de propina (%)</label>
+                        <div class="flex gap-2">
+                            <button onclick="setTipPercentage(10)" class="tip-btn flex-1 py-2 border-2 border-yellow-300 rounded-lg hover:bg-yellow-100 transition-colors text-sm font-medium" data-percentage="10">10%</button>
+                            <button onclick="setTipPercentage(15)" class="tip-btn flex-1 py-2 border-2 border-yellow-300 rounded-lg hover:bg-yellow-100 transition-colors text-sm font-medium bg-yellow-200" data-percentage="15">15%</button>
+                            <button onclick="setTipPercentage(20)" class="tip-btn flex-1 py-2 border-2 border-yellow-300 rounded-lg hover:bg-yellow-100 transition-colors text-sm font-medium" data-percentage="20">20%</button>
+                        </div>
+                        <input type="number" id="tip-percentage" value="15" 
+                               class="mt-2 w-full px-4 py-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-400 focus:outline-none transition-colors">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Número de personas</label>
+                        <input type="number" id="tip-people" value="1" min="1"
+                               class="w-full px-4 py-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-400 focus:outline-none transition-colors">
+                    </div>
+
+                    <button onclick="calculateTip()" 
+                            class="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-md hover:shadow-lg">
+                        Calcular
+                    </button>
+
+                    <div id="tip-result" class="hidden mt-4 space-y-2">
+                        <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200 flex justify-between">
+                            <span class="text-sm text-gray-600">Propina:</span>
+                            <span id="tip-amount" class="font-bold text-yellow-700">-</span>
+                        </div>
+                        <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200 flex justify-between">
+                            <span class="text-sm text-gray-600">Total con propina:</span>
+                            <span id="tip-total-with" class="font-bold text-yellow-700">-</span>
+                        </div>
+                        <div class="bg-gradient-to-r from-yellow-400 to-orange-400 p-3 rounded-lg text-white flex justify-between shadow-md">
+                            <span class="text-sm">Por persona:</span>
+                            <span id="tip-per-person" class="font-bold">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-6 text-yellow-700 text-xs">
+        <p>© 2026 Calculadora Multifuncional • Hecha con 💛</p>
+    </div>
+</div>
+
+<script>
+    // Tab switching
+    function switchTab(tabName) {
+        // Hide all content
+        document.querySelectorAll('[id^="content-"]').forEach(el => el.classList.add('hidden'));
+        // Show selected content
+        document.getElementById(`content-${tabName}`).classList.remove('hidden');
+        
+        // Update tab styles
+        document.querySelectorAll('[id^="tab-"]').forEach(el => {
+            el.classList.remove('tab-active');
+            el.classList.add('tab-inactive');
+        });
+        document.getElementById(`tab-${tabName}`).classList.remove('tab-inactive');
+        document.getElementById(`tab-${tabName}`).classList.add('tab-active');
+    }
+
+    // Temperature Converter
+    function convertTemperature() {
+        const value = parseFloat(document.getElementById('temp-value').value);
+        const scale = document.getElementById('temp-scale').value;
+        
+        if (isNaN(value)) {
+            alert('Por favor ingresa un valor válido');
+            return;
+        }
+
+        let celsius, fahrenheit, kelvin;
+
+        if (scale === 'celsius') {
+            celsius = value;
+            fahrenheit = (value * 9/5) + 32;
+            kelvin = value + 273.15;
+        } else if (scale === 'fahrenheit') {
+            celsius = (value - 32) * 5/9;
+            fahrenheit = value;
+            kelvin = ((value - 32) * 5/9) + 273.15;
+        } else if (scale === 'kelvin') {
+            celsius = value - 273.15;
+            fahrenheit = ((value - 273.15) * 9/5) + 32;
+            kelvin = value;
+        }
+
+        document.getElementById('result-celsius').textContent = celsius.toFixed(2) + ' °C';
+        document.getElementById('result-fahrenheit').textContent = fahrenheit.toFixed(2) + ' °F';
+        document.getElementById('result-kelvin').textContent = kelvin.toFixed(2) + ' K';
+        document.getElementById('temp-results').classList.remove('hidden');
+    }
+
+    // BMI Calculator
+    function calculateBMI() {
+        const weight = parseFloat(document.getElementById('bmi-weight').value);
+        const height = parseFloat(document.getElementById('bmi-height').value);
+        
+        if (isNaN(weight) || isNaN(height) || height <= 0) {
+            alert('Por favor ingresa valores válidos');
+            return;
+        }
+
+        const heightInMeters = height / 100;
+        const bmi = weight / (heightInMeters * heightInMeters);
+        
+        let category = '';
+        let categoryClass = '';
+        
+        if (bmi < 18.5) {
+            category = 'Bajo peso';
+            categoryClass = 'bg-blue-100 text-blue-700';
+        } else if (bmi < 25) {
+            category = 'Normal';
+            categoryClass = 'bg-green-100 text-green-700';
+        } else if (bmi < 30) {
+            category = 'Sobrepeso';
+            categoryClass = 'bg-orange-100 text-orange-700';
+        } else {
+            category = 'Obesidad';
+            categoryClass = 'bg-red-100 text-red-700';
+        }
+
+        document.getElementById('bmi-value').textContent = bmi.toFixed(1);
+        const categoryEl = document.getElementById('bmi-category');
+        categoryEl.textContent = category;
+        categoryEl.className = `inline-block px-4 py-2 rounded-full text-sm font-semibold ${categoryClass}`;
+        document.getElementById('bmi-result').classList.remove('hidden');
+    }
+
+    // Calorie Estimator
+    const foodCalories = {
+        apple: 52,
+        banana: 89,
+        rice: 130,
+        chicken: 165,
+        bread: 265,
+        egg: 155,
+        milk: 61,
+        cheese: 403,
+        pasta: 131,
+        salmon: 208
+    };
+
+    function estimateCalories() {
+        const food = document.getElementById('calorie-food').value;
+        const amount = parseFloat(document.getElementById('calorie-amount').value);
+        
+        if (!food || isNaN(amount) || amount <= 0) {
+            alert('Por favor selecciona un alimento e ingresa una cantidad válida');
+            return;
+        }
+
+        const caloriesPer100g = foodCalories[food];
+        const totalCalories = (caloriesPer100g * amount) / 100;
+        
+        document.getElementById('calorie-value').textContent = Math.round(totalCalories);
+        document.getElementById('calorie-result').classList.remove('hidden');
+    }
+
+    // Tip Calculator
+    let selectedTipPercentage = 15;
+
+    function setTipPercentage(percentage) {
+        selectedTipPercentage = percentage;
+        document.getElementById('tip-percentage').value = percentage;
+        
+        // Update button styles
+        document.querySelectorAll('.tip-btn').forEach(btn => {
+            btn.classList.remove('bg-yellow-200');
+            if (parseInt(btn.dataset.percentage) === percentage) {
+                btn.classList.add('bg-yellow-200');
+            }
+        });
+    }
+
+    function calculateTip() {
+        const total = parseFloat(document.getElementById('tip-total').value);
+        const percentage = parseFloat(document.getElementById('tip-percentage').value);
+        const people = parseInt(document.getElementById('tip-people').value) || 1;
+        
+        if (isNaN(total) || total <= 0) {
+            alert('Por favor ingresa un total válido');
+            return;
+        }
+
+        const tipAmount = (total * percentage) / 100;
+        const totalWithTip = total + tipAmount;
+        const perPerson = totalWithTip / people;
+
+        document.getElementById('tip-amount').textContent = '$' + tipAmount.toFixed(2);
+        document.getElementById('tip-total-with').textContent = '$' + totalWithTip.toFixed(2);
+        document.getElementById('tip-per-person').textContent = '$' + perPerson.toFixed(2);
+        document.getElementById('tip-result').classList.remove('hidden');
+    }
+
+    // Allow custom tip percentage input
+    document.getElementById('tip-percentage').addEventListener('input', function() {
+        const value = parseInt(this.value);
+        if (value && value > 0) {
+            selectedTipPercentage = value;
+            document.querySelectorAll('.tip-btn').forEach(btn => {
+                btn.classList.remove('bg-yellow-200');
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
+
