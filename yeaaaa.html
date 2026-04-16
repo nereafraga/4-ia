@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Felididades!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        canvas#confettiCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .title {
+            font-size: 4rem;
+            font-weight: 900;
+            color: transparent;
+            background: linear-gradient(90deg, #ff6ec7, #ffd700, #00e5ff, #ff6ec7);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite;
+            margin-bottom: 40px;
+            text-shadow: none;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            z-index: 2;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .plate {
+            width: 320px;
+            height: 320px;
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow:
+                0 0 30px rgba(255, 110, 199, 0.2),
+                0 0 60px rgba(0, 229, 255, 0.1),
+                inset 0 2px 4px rgba(255, 255, 255, 0.1),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            z-index: 2;
+            animation: floatPlate 4s ease-in-out infinite;
+        }
+
+        @keyframes floatPlate {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .plate::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 32px;
+            background: linear-gradient(45deg, #ff6ec7, #ffd700, #00e5ff, #ff6ec7);
+            background-size: 400% 400%;
+            animation: borderGlow 4s ease-in-out infinite;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        @keyframes borderGlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .btn-celebrate {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(145deg, #ff6ec7, #ff3e9a);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow:
+                0 8px 30px rgba(255, 62, 154, 0.4),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.2),
+                inset 0 3px 6px rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-celebrate::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-celebrate:hover::after {
+            opacity: 1;
+        }
+
+        .btn-celebrate:hover {
+            transform: scale(1.08);
+            box-shadow:
+                0 12px 40px rgba(255, 62, 154, 0.6),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.2),
+                inset 0 3px 6px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-celebrate:active {
+            transform: scale(0.95);
+        }
+
+        .btn-icon {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 2.2rem;
+                letter-spacing: 3px;
+            }
+            .plate {
+                width: 240px;
+                height: 240px;
+                border-radius: 20px;
+            }
+            .btn-celebrate {
+                width: 130px;
+                height: 130px;
+                font-size: 0.9rem;
+            }
+            .btn-icon {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="confettiCanvas"></canvas>
+
+    <h1 class="title">FELICIDADES</h1>
+
+    <div class="plate">
+        <button class="btn-celebrate" id="btnPlay">
+            <span class="btn-icon">🎉</span>
+            ¡Toca aquí!
+        </button>
+    </div>
+
+    <script>
+        // Confetti
+        const canvas = document.getElementById('confettiCanvas');
+        const ctx = canvas.getContext('2d');
+        let W, H;
+        const confettiPieces = [];
+        const colors = ['#ff6ec7', '#ffd700', '#00e5ff', '#ff3e9a', '#76ff03', '#ff9100', '#d500f9', '#18ffff'];
+
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class ConfettiPiece {
+            constructor() {
+                this.reset();
+                this.y = Math.random() * -H;
+            }
+
+            reset() {
+                this.x = Math.random() * W;
+                this.y = -20;
+                this.w = Math.random() * 12 + 6;
+                this.h = Math.random() * 8 + 4;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.speedY = Math.random() * 3 + 1.5;
+                this.speedX = Math.random() * 2 - 1;
+                this.angle = Math.random() * Math.PI * 2;
+                this.spin = (Math.random() - 0.5) * 0.1;
+                this.opacity = 1;
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX + Math.sin(this.angle) * 0.5;
+                this.angle += this.spin;
+
+                if (this.y > H + 20) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.globalAlpha = this.opacity;
+                ctx.fillStyle = this.color;
+                ctx.fillRect(-this.w / 2, -this.h / 2, this.w, this.h);
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < 150; i++) {
+            confettiPieces.push(new ConfettiPiece());
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, W, H);
+            confettiPieces.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateConfetti);
+        }
+        animateConfetti();
+
+        // Audio
+        const audioUrl = 'https://ia902808.us.archive.org/13/items/nueva-grabacion_202604/Nueva%20grabacio%CC%81n.m4a';
+        let audio = null;
+
+        document.getElementById('btnPlay').addEventListener('click', () => {
+            if (audio) {
+                audio.pause();
+                audio.currentTime = 0;
+            }
+            audio = new Audio(audioUrl);
+            audio.play().catch(e => console.log('Reproducción bloqueada:', e));
+
+            // Burst extra confetti on click
+            for (let i = 0; i < 30; i++) {
+                const piece = new ConfettiPiece();
+                piece.y = Math.random() * H * 0.3;
+                piece.speedY = Math.random() * 5 + 2;
+                confettiPieces.push(piece);
+            }
+            // Trim excess
+            while (confettiPieces.length > 250) {
+                confettiPieces.shift();
+            }
+        });
+    </script>
+</body>
+</html>
+
